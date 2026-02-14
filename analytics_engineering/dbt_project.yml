@@ -1,6 +1,6 @@
 name: analytics_engineering
 
-profile: jaffle_shop
+profile: analytics_engineering
 
 seed-paths: ["seeds"]
 model-paths: ["models"]
