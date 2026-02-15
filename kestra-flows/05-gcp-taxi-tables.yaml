@@ -1,0 +1,45 @@
+id: gcp_taxi_tables
+namespace: zoomcamp
+
+inputs:
+  - id: taxi_types
+    type: ARRAY
+    itemType: STRING
+    defaults: [yellow, green]
+    description: List of taxi types to process.
+
+  - id: years
+    type: ARRAY
+    itemType: STRING
+    defaults: ["2019", "2020"]
+    description: List of years to process.
+
+tasks:
+  - id: create_tables
+    type: io.kestra.plugin.core.flow.ForEach
+    values: "{{ inputs.taxi_types }}"
+    tasks:
+      - id: create_external_table
+        type: io.kestra.plugin.gcp.bigquery.Query
+        sql: |
+          CREATE OR REPLACE EXTERNAL TABLE `{{kv('GCP_PROJECT_ID')}}.{{kv('GCP_DATASET')}}.{{ taskrun.value }}_tripdata_ext`
+          OPTIONS (
+              format = 'CSV',
+              uris = [
+                {% for year in inputs.years %}'gs://{{kv('GCP_BUCKET_NAME')}}/{{ taskrun.value }}_tripdata_{{ year }}-*.csv'{% if not loop.last %},{% endif %}{% endfor %}
+              ]
+          );
+
+      - id: create_native_table
+        type: io.kestra.plugin.gcp.bigquery.Query
+        sql: |
+          CREATE OR REPLACE TABLE `{{kv('GCP_PROJECT_ID')}}.{{kv('GCP_DATASET')}}.{{ taskrun.value }}_tripdata`
+          AS SELECT * FROM `{{kv('GCP_PROJECT_ID')}}.{{kv('GCP_DATASET')}}.{{ taskrun.value }}_tripdata_ext`;
+
+pluginDefaults:
+  - type: io.kestra.plugin.gcp
+    values:
+      serviceAccount: "{{ secret('GCP_SERVICE_ACCOUNT') }}"
+      projectId: "{{kv('GCP_PROJECT_ID')}}"
+      location: "{{kv('GCP_LOCATION')}}"
+      bucket: "{{kv('GCP_BUCKET_NAME')}}"
