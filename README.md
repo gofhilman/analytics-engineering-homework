@@ -6,11 +6,18 @@ Problems: <https://github.com/DataTalksClub/data-engineering-zoomcamp/blob/main/
 
 1. If you run `dbt run --select int_trips_unioned`, the model that will be built is `int_trips_unioned` only.
 
+    To prepare the data, set up kestra using `docker-compose.yaml` by providing the Google Cloud Platform service account secrets in `.env_encoded`. Then upload and run kestra flow `kestra-flows/01-gcp-kv.yaml`, `kestra-flows/02-gcp-setup.yaml`, `kestra-flows/03-gcp-taxi.yaml`, `kestra-flows/04-gcp-loop-taxi.yaml`, and `kestra-flows/05-gcp-taxi-tables.yaml` simultaneously by using required data for the problems. Then, execute `dbt build --target prod`in `analytics_engineering` directory.
+
 2. If you run `dbt test --select fct_trips`, dbt will fail the test, returning a non-zero exit code.
 
-3. 12,184
+3. The count of records in the `fct_monthly_zone_revenue` model is 12,184.
 
-4. East Harlem North
+    ```sql
+    SELECT 
+        COUNT(*) FROM `even-lyceum-282418.analytics_engineering.fct_monthly_zone_revenue`;
+    ```
+
+4. The pickup zone with the highest total revenue (`revenue_monthly_total_amount`) for `Green` taxi trips in 2020 is East Harlem North.
 
     ```sql
     SELECT 
@@ -24,7 +31,7 @@ Problems: <https://github.com/DataTalksClub/data-engineering-zoomcamp/blob/main/
     LIMIT 1;
     ```
 
-5. 384,624
+5. The total number of trips (`total_monthly_trips`) for `Green` taxis in October 2019 is 384,624.
 
     ```sql
     SELECT 
@@ -34,7 +41,7 @@ Problems: <https://github.com/DataTalksClub/data-engineering-zoomcamp/blob/main/
         AND revenue_month = DATE '2019-10-01';
     ```
 
-6. 43,244,693
+6. The count of records in `stg_fhv_tripdata` is 43,244,693.
 
     ```sql
     SELECT 
